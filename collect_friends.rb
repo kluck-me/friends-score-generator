@@ -1,5 +1,6 @@
 require 'dotenv/load'
 require 'twitter'
+require 'fileutils'
 
 client = Twitter::REST::Client.new do |config|
   config.consumer_key        = ENV['CONSUMER_KEY']
@@ -14,13 +15,18 @@ def followings_of(screen_name, client)
     users.concat(client.users(ids))
   end
 rescue Twitter::Error::TooManyRequests => error
+  STDERR.puts "sleep #{error.rate_limit.reset_in}s"
   sleep error.rate_limit.reset_in
   retry
 end
 
-ARGV.each do |screen_name|
-  open("friends_#{screen_name}.txt", 'w') do |f|
-    followings_of(screen_name, client).each do |user|
+FileUtils.rm_rf('.friends')
+FileUtils.mkdir_p('.friends')
+ARGV.each do |arg|
+  name, _ = arg.split('-', 2)
+  open(".friends/#{arg}", 'w') do |f|
+    STDERR.puts "get #{name}'s friends"
+    followings_of(name, client).each do |user|
       f.puts user.screen_name
     end
   end
