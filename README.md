@@ -1,6 +1,6 @@
 # shared-friends
 
 ``` sh
-$ bundle exec ruby collect_friends.rb USERNAME1 USERNAME2 ...
-$ ruby shared_friends.rb 1.5 friends_USERNAME1.txt 1 friends_*
+$ bundle exec ruby collect_friends.rb vip-1.5 user_a user_b
+$ ruby shared_friends.rb -5 vip user_a user_b other
 ```
