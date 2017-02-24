@@ -4,30 +4,35 @@ require 'zlib'
 
 FORMATS = %w(text html code)
 format = FORMATS.first
-files = {}
-file_score = 1
+special_users_set = {}
+special_users_score = 0
 ARGV.each do |arg|
-  if arg.start_with?('--')
-    arg = arg[2..-1]
-    format = arg if FORMATS.include?(arg)
-  else
+  if arg.start_with?('-')
+    arg = arg.sub(/\A-+/, '')
     begin
-      file_score = Float(arg)
+      special_users_score = Float(arg)
     rescue ArgumentError
-      files[File.expand_path(arg)] ||= file_score
+      format = arg if FORMATS.include?(arg)
     end
+  else
+    (special_users_set[special_users_score] ||= []) << arg
   end
 end
 format = format.to_sym
 
 friends = Hash.new(0)
-files.each do |path, score|
-  users = File.read(path).each_line.map(&:strip)
-  users.each { |user| friends[user] += score }
+Dir.glob('.friends/*') do |path|
+  _, score = path.split('-', 2)
+  score = score ? score.to_f : 1
+  File.read(path).each_line do |user|
+    friends[user.strip] += score
+  end
 end
-
-special_users = []
-special_users.each { |user| friends[user] = 5 }
+special_users_set.each do |score, users|
+  users.each do |user|
+    friends[user.strip] = score
+  end
+end
 
 scoring_friends = friends.group_by(&:last).to_a.sort_by(&:first)
 scoring_friends.each { |pair| pair.last.map!(&:first) }
