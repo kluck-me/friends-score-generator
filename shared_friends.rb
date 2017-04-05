@@ -62,7 +62,7 @@ when :code
   code = 1.upto(10).map do |score|
     score /= 2.0
     _, users = scoring_friends.find { |pair| pair.first == score }
-    (users || []).map { |user| format('%08x', Zlib.crc32(user)) }.uniq.join
+    (users || []).map { |user| format('%08x', Zlib.crc32(user.downcase)) }.uniq.join
   end.join('x')
   puts code
   # decode sample
@@ -75,7 +75,7 @@ when :code
     end
   end
   friends.each do |user, score|
-    hash_user = ('0' * 8 + Zlib.crc32(user).to_s(16))[-8..-1]
+    hash_user = ('0' * 8 + Zlib.crc32(user.downcase).to_s(16))[-8..-1]
     next if hashed_scoring_users[hash_user] == score
     raise "#{user} (#{score}) != #{hash_user} (#{hashed_scoring_users[hash_user]})"
   end
